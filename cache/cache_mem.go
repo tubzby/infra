@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"gdcx.com/infra/logger"
+	"gitee.com/romeo_zpl/infra/logger"
 	"github.com/vmihailenco/msgpack"
 )
 

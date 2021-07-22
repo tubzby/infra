@@ -3,7 +3,7 @@ package id
 import (
 	"os"
 
-	"gdcx.com/infra/logger"
+	"gitee.com/romeo_zpl/infra/logger"
 	"github.com/bwmarrin/snowflake"
 )
 

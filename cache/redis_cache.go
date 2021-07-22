@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gdcx.com/infra/logger"
+	"gitee.com/romeo_zpl/infra/logger"
 	"github.com/go-redis/redis"
 	"github.com/vmihailenco/msgpack"
 )

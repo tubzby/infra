@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"gdcx.com/infra/copy"
+	"gitee.com/romeo_zpl/infra/copy"
 	"github.com/stretchr/testify/assert"
 )
 

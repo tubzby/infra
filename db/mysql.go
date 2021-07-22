@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gdcx.com/infra/logger"
+	"gitee.com/romeo_zpl/infra/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

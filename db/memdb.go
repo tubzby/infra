@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"gdcx.com/infra/copy"
-	"gdcx.com/infra/logger"
+	"gitee.com/romeo_zpl/infra/copy"
+	"gitee.com/romeo_zpl/infra/logger"
 )
 
 // TODO

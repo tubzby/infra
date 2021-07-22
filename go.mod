@@ -1,4 +1,4 @@
-module gdcx.com/infra
+module gitee.com/romeo_zpl/infra
 
 go 1.16
 
