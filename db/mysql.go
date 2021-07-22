@@ -1,0 +1,246 @@
+package db
+
+import (
+	"fmt"
+	"time"
+
+	"gdcx.com/infra/logger"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
+
+// Conf is db configurations
+type Conf struct {
+	IP          string
+	Port        int
+	UserName    string
+	Password    string
+	DB          string
+	Idle        int
+	Active      int
+	IdleTimeout int
+	Debug       bool
+}
+
+// MySQL .
+type MySQL struct {
+	conf    Conf
+	orm     *gorm.DB
+	preload bool
+}
+
+var _ Connecter = new(MySQL)
+
+// NewMySQL create mysqldb
+func NewMySQL(conf Conf) *MySQL {
+	sql := MySQL{
+		conf:    conf,
+		preload: true,
+	}
+	sql.init()
+	return &sql
+}
+
+func (sql *MySQL) init() {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
+		sql.conf.UserName,
+		sql.conf.Password,
+		sql.conf.IP,
+		sql.conf.Port,
+		sql.conf.DB)
+
+	orm, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		logger.Errorf("db dsn(%s) err(%v)", dsn, err)
+		return
+	}
+
+	mysql, _ := orm.DB()
+	mysql.SetMaxIdleConns(sql.conf.Idle)
+	mysql.SetMaxOpenConns(sql.conf.Active)
+	mysql.SetConnMaxIdleTime(time.Duration(sql.conf.IdleTimeout) * time.Second)
+
+	if sql.conf.Debug {
+		logger.Info("db debug on")
+		orm = orm.Debug()
+	}
+	sql.orm = orm
+}
+
+// Add add object to db
+func (sql *MySQL) Add(obj interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	if err := sql.selectTbl(obj).Create(obj).Error; err != nil {
+		logger.Errorf("add object(%v) error(%v)", obj, err)
+		return err
+	}
+	return nil
+}
+
+// GetOne get a single object
+func (sql *MySQL) GetOne(obj interface{}, query string, args ...interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	orm := sql.selectTbl(obj)
+	if sql.preload {
+		orm = orm.Preload(clause.Associations)
+	}
+	switch err := orm.Where(query, args...).First(obj).Error; err {
+	case nil:
+		return nil
+	case gorm.ErrRecordNotFound:
+		return ErrNil
+	default:
+		logger.Errorf("sql error(%s)", err)
+		return err
+	}
+}
+
+// GetPages get a page of object
+func (sql *MySQL) GetPages(objs interface{}, page PageParam, query string, args ...interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	orm := sql.selectTbl(objs)
+	if sql.preload {
+		orm = orm.Preload(clause.Associations)
+	}
+
+	var err error
+	if len(query) > 0 {
+		err = orm.Where(query, args).Limit(page.PageSize).Offset(page.PageSize * (page.PageNo - 1)).Find(objs).Error
+	} else {
+		err = orm.Limit(page.PageSize).Offset(page.PageSize * (page.PageNo - 1)).Find(objs).Error
+	}
+	if err != nil {
+		logger.Errorf("read object from db failed(%v)", err)
+		return err
+	}
+	return nil
+}
+
+// Delete one record
+func (sql *MySQL) Delete(obj interface{}, query string, args ...interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	if len(query) == 0 {
+		logger.Errorf("try to delete without conditions")
+		return ErrParam
+	}
+
+	return sql.selectTbl(obj).Delete(obj, query, args).Error
+}
+
+func (sql *MySQL) GetAll(objs interface{}, query string, args ...interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	orm := sql.selectTbl(objs)
+
+	if sql.preload {
+		orm = orm.Preload(clause.Associations)
+	}
+
+	var err error
+	if len(query) > 0 {
+		err = orm.Where(query, args).Find(objs).Error
+	} else {
+		err = orm.Find(objs).Error
+	}
+	if err != nil {
+		logger.Errorf("read obj from db failed(%s)", err)
+		return err
+	}
+	return nil
+}
+
+func (sql *MySQL) dropTbl(obj interface{}) error {
+	if !sql.tblExist(obj) {
+		return nil
+	}
+
+	if err := sql.orm.Migrator().DropTable(obj); err != nil {
+		logger.Errorf("dropTbl error(%s)", err)
+		return err
+	}
+	return nil
+}
+
+func (sql *MySQL) tblExist(obj interface{}) bool {
+	return sql.orm.Migrator().HasTable(obj)
+}
+func (sql *MySQL) createTbl(obj interface{}) error {
+	if err := sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(obj); err != nil {
+		logger.Errorf("createTbl error(%s)", err)
+		return err
+	}
+	return nil
+}
+
+func (sql *MySQL) selectTbl(obj interface{}) *gorm.DB {
+	custom, ok := obj.(CustomObj)
+	if ok {
+		return sql.orm.Table(custom.TblName())
+	}
+	return sql.orm
+}
+
+func (sql *MySQL) Update(obj interface{}, column string, value interface{}, query string, args ...interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	orm := sql.selectTbl(obj)
+	var err error
+
+	if len(query) > 0 {
+		err = orm.Model(obj).Where(query, args).Update(column, value).Error
+	} else {
+		err = orm.Model(obj).Where(obj).Update(column, value).Error
+	}
+	if err != nil {
+		logger.Errorf("update error: %s", err)
+	}
+	return err
+}
+
+func (sql *MySQL) Updates(obj interface{}, values interface{}, query string, args ...interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	orm := sql.selectTbl(obj)
+
+	return orm.Model(obj).Where(query, args...).Updates(values).Error
+}
+
+func (sql *MySQL) UpdatesAll(obj interface{}) error {
+	if !sql.checkState() {
+		return ErrConnect
+	}
+
+	orm := sql.selectTbl(obj)
+
+	return orm.Save(obj).Error
+}
+
+func (sql *MySQL) valid() bool {
+	return sql.orm != nil
+}
+
+func (sql *MySQL) checkState() bool {
+	if !sql.valid() {
+		sql.init()
+	}
+	return sql.valid()
+}

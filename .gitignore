@@ -1,0 +1,5 @@
+output
+*.swap
+*.log
+debug
+debug.test
