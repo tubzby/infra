@@ -3,3 +3,4 @@ output
 *.log
 debug
 debug.test
+go.sum

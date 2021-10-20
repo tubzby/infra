@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	rotatelogs "gitee.com/romeo_zpl/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 )
@@ -88,19 +88,18 @@ func EnableFileLine(skip int) {
 }
 
 // rotate log to file
-func LogToFile(file string) {
+func LogToFile(file string, maxSize int, rotate uint) error {
 	path := file
 	writer, err := rotatelogs.New(
 		path+".%Y%m%d%H%M",
 		rotatelogs.WithLinkName(path),
-		rotatelogs.WithMaxAge(time.Duration(86400)*time.Second),
 		rotatelogs.WithRotationTime(time.Duration(604800)*time.Second),
-		rotatelogs.WithRotationSize(100*1024*1024), // 100 MB
-		rotatelogs.WithRotationCount(5),            // 5 rotate
+		rotatelogs.WithRotationSize(int64(maxSize)),
+		rotatelogs.WithRotationCount(rotate),
 	)
 	if err != nil {
-		logrus.Errorf("can't create rotatelogs")
-		return
+		logrus.Errorf("can't create rotatelogs: %s", err)
+		return err
 	}
 
 	logrus.AddHook(lfshook.NewHook(
@@ -111,7 +110,7 @@ func LogToFile(file string) {
 		},
 		&logrus.JSONFormatter{},
 	))
-
+	return nil
 }
 
 // Error .
