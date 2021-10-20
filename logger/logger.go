@@ -95,6 +95,8 @@ func LogToFile(file string) {
 		rotatelogs.WithLinkName(path),
 		rotatelogs.WithMaxAge(time.Duration(86400)*time.Second),
 		rotatelogs.WithRotationTime(time.Duration(604800)*time.Second),
+		rotatelogs.WithRotationSize(100*1024*1024), // 100 MB
+		rotatelogs.WithRotationCount(5),            // 5 rotate
 	)
 	if err != nil {
 		logrus.Errorf("can't create rotatelogs")
