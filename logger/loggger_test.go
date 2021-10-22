@@ -19,3 +19,13 @@ func TestLog2File(t *testing.T) {
 		Infof("str: %s", bs)
 	}
 }
+
+func TestLogTimeStamp(t *testing.T) {
+	assert := assert.New(t)
+	file := "/tmp/log.file"
+
+	maxSize := 1024 * 1024
+	rotate := 3
+	assert.NoError(LogToFile(file, maxSize, uint(rotate)))
+	Info("hello")
+}

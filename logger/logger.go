@@ -76,7 +76,7 @@ func findCaller(skip int) (string, int) {
 }
 
 func init() {
-	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true, TimestampFormat: "20060102 15:04:05"})
+	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true, TimestampFormat: "2006-01-02 15:04:05.000"})
 }
 
 func EnableDebug() {
@@ -108,7 +108,9 @@ func LogToFile(file string, maxSize int, rotate uint) error {
 			logrus.InfoLevel:  writer,
 			logrus.ErrorLevel: writer,
 		},
-		&logrus.JSONFormatter{},
+		&logrus.JSONFormatter{
+			TimestampFormat: "2006-01-02 15:04:05.000",
+		},
 	))
 	return nil
 }
