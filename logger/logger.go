@@ -83,6 +83,14 @@ func EnableDebug() {
 	logrus.SetLevel(logrus.DebugLevel)
 }
 
+func DisableDebug() {
+	logrus.SetLevel(logrus.InfoLevel)
+}
+
+func SetLogLevel(level logrus.Level) {
+	logrus.SetLevel(level)
+}
+
 func EnableFileLine(skip int) {
 	logrus.AddHook(NewMyHook(skip))
 }
