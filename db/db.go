@@ -7,6 +7,7 @@ type Connecter interface {
 	Delete(obj interface{}, query string, args ...interface{}) error
 	GetPages(objs interface{}, page PageParam, query string, args ...interface{}) error
 	GetAll(objs interface{}, query string, args ...interface{}) error
+	Count(obj interface{}, query string, args ...interface{}) (int64, error)
 	// update single column
 	Update(obj interface{}, column string, value interface{}, query string, args ...interface{}) error
 	// update multiple columns
@@ -21,6 +22,6 @@ type CustomObj interface {
 
 // PageParam is parameter for querying a list of resource
 type PageParam struct {
-	PageNo   int `json:"pageno" form:"pageno"`
-	PageSize int `json:"pagesize" form:"pagesize"`
+	Offset int
+	Limit  int
 }

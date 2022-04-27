@@ -141,8 +141,8 @@ func TestMySQL(t *testing.T) {
 		case "GetPages":
 			var objs []TestTbl
 			pages := PageParam{
-				PageNo:   1,
-				PageSize: 10,
+				Offset: 1,
+				Limit:  10,
 			}
 			assert.Equal(c.Err, sql.GetPages(&objs, pages, ""))
 		case "Delete":

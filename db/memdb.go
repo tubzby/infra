@@ -90,6 +90,10 @@ func (mdb *MemDB) GetPages(objs interface{}, page PageParam, query string, args 
 	return nil
 }
 
+func (mdb *MemDB) Count(obj interface{}, query string, args ...interface{}) (int64, error) {
+	return 0, nil
+}
+
 func (mdb *MemDB) GetAll(objs interface{}, query string, args ...interface{}) error {
 	return nil
 }

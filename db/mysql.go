@@ -115,15 +115,34 @@ func (sql *MySQL) GetPages(objs interface{}, page PageParam, query string, args 
 
 	var err error
 	if len(query) > 0 {
-		err = orm.Where(query, args).Limit(page.PageSize).Offset(page.PageSize * (page.PageNo - 1)).Find(objs).Error
+		err = orm.Where(query, args).Limit(page.Limit).Offset(page.Offset).Find(objs).Error
 	} else {
-		err = orm.Limit(page.PageSize).Offset(page.PageSize * (page.PageNo - 1)).Find(objs).Error
+		err = orm.Limit(page.Limit).Offset(page.Offset).Find(objs).Error
 	}
 	if err != nil {
 		logger.Errorf("read object from db failed(%v)", err)
 		return err
 	}
 	return nil
+}
+
+func (sql *MySQL) Count(obj interface{}, query string, args ...interface{}) (int64, error) {
+	if !sql.checkState() {
+		return 0, ErrConnect
+	}
+
+	orm := sql.selectTbl(obj)
+	if sql.preload {
+		orm = orm.Preload(clause.Associations)
+	}
+
+	var count int64
+	if len(query) > 0 {
+		orm.Where(query, args).Count(&count)
+	} else {
+		orm.Count(&count)
+	}
+	return count, nil
 }
 
 // Delete one record
