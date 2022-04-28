@@ -136,11 +136,17 @@ func (sql *MySQL) Count(obj interface{}, query string, args ...interface{}) (int
 		orm = orm.Preload(clause.Associations)
 	}
 
+	orm = orm.Model(obj)
+
 	var count int64
 	if len(query) > 0 {
-		orm.Where(query, args).Count(&count)
+		if db := orm.Where(query, args).Count(&count); db.Error != nil {
+			return 0, db.Error
+		}
 	} else {
-		orm.Count(&count)
+		if db := orm.Count(&count); db.Error != nil {
+			return 0, db.Error
+		}
 	}
 	return count, nil
 }

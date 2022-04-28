@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -257,4 +258,46 @@ func TestHasMany(t *testing.T) {
 
 	assert.NoError(sql.orm.Preload(clause.Associations).Find(&u1, "id = ?", u.ID).Error)
 	assert.Equal(u.Groups, u1.Groups)
+}
+
+func TestGetPages(t *testing.T) {
+	assert := assert.New(t)
+	sql := createDB()
+
+	sql.dropTbl(&Resource{})
+	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&Resource{}))
+	defer sql.dropTbl(&Resource{})
+
+	var res Resource
+	var total = 20
+	for i := 0; i < total; i++ {
+		res.ID = 0
+		res.NodeID = int64(i)
+		res.IP = fmt.Sprintf("192.168.%d.0", i)
+		res.MASK = "255.255.255.0"
+		assert.NoError(sql.Add(&res))
+	}
+
+	count, err := sql.Count(&Resource{}, "")
+	assert.NoError(err)
+	assert.Equal(int64(total), count)
+
+	param := PageParam{
+		Offset: 0,
+		Limit:  10,
+	}
+	var ress []Resource
+	err = sql.GetPages(&ress, param, "")
+	assert.NoError(err)
+	assert.Equal(10, len(ress))
+
+	param.Offset = 10
+	err = sql.GetPages(&ress, param, "")
+	assert.NoError(err)
+	assert.Equal(10, len(ress))
+
+	param.Offset = 15
+	err = sql.GetPages(&ress, param, "")
+	assert.NoError(err)
+	assert.Equal(5, len(ress))
 }
