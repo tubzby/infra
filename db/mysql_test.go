@@ -267,14 +267,15 @@ func TestGetPages(t *testing.T) {
 		assert.NoError(sql.Add(&res))
 	}
 
-	count, err := sql.Count(&Resource{}, "")
-	assert.NoError(err)
-	assert.Equal(int64(total), count)
-
 	query := Query{
 		Offset: 0,
 		Limit:  10,
 	}
+
+	count, err := sql.Count(&Resource{}, query)
+	assert.NoError(err)
+	assert.Equal(int64(total), count)
+
 	var ress []Resource
 	err = sql.GetPages(&ress, query)
 	assert.NoError(err)
@@ -309,14 +310,14 @@ func TestGetPagesWithFilter(t *testing.T) {
 		assert.NoError(sql.Add(&res))
 	}
 
-	count, err := sql.Count(&Resource{}, "")
-	assert.NoError(err)
-	assert.Equal(int64(total), count)
-
 	query := Query{
 		Offset: 0,
 		Limit:  10,
 	}
+
+	count, err := sql.Count(&Resource{}, query)
+	assert.NoError(err)
+	assert.Equal(int64(total), count)
 
 	query.Filter = map[string]interface{}{
 		"id": []int{1, 2, 3, 4},
@@ -326,4 +327,40 @@ func TestGetPagesWithFilter(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal(4, len(ress))
 
+}
+
+func TestCount(t *testing.T) {
+	assert := assert.New(t)
+	sql := createDB()
+
+	sql.dropTbl(&Resource{})
+	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&Resource{}))
+	defer sql.dropTbl(&Resource{})
+
+	var res Resource
+	var total = 20
+	for i := 0; i < total; i++ {
+		res.ID = 0
+		res.NodeID = int64(i)
+		res.IP = fmt.Sprintf("192.168.%d.0", i)
+		res.MASK = "255.255.255.0"
+		assert.NoError(sql.Add(&res))
+	}
+
+	query := Query{
+		Offset: 0,
+		Limit:  10,
+	}
+
+	count, err := sql.Count(&Resource{}, query)
+	assert.NoError(err)
+	assert.Equal(int64(total), count)
+
+	query.Filter = map[string]interface{}{
+		"id": []int{1, 2, 3, 4},
+	}
+
+	count, err = sql.Count(&Resource{}, query)
+	assert.NoError(err)
+	assert.Equal(int64(4), count)
 }

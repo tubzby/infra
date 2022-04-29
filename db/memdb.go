@@ -90,7 +90,7 @@ func (mdb *MemDB) GetPages(oobjs interface{}, query Query) error {
 	return nil
 }
 
-func (mdb *MemDB) Count(obj interface{}, query string, args ...interface{}) (int64, error) {
+func (mdb *MemDB) Count(obj interface{}, query Query) (int64, error) {
 	return 0, nil
 }
 

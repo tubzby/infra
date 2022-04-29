@@ -126,7 +126,7 @@ func (sql *MySQL) GetPages(objs interface{}, query Query) error {
 	return nil
 }
 
-func (sql *MySQL) Count(obj interface{}, query string, args ...interface{}) (int64, error) {
+func (sql *MySQL) Count(obj interface{}, query Query) (int64, error) {
 	if !sql.checkState() {
 		return 0, ErrConnect
 	}
@@ -139,8 +139,8 @@ func (sql *MySQL) Count(obj interface{}, query string, args ...interface{}) (int
 	orm = orm.Model(obj)
 
 	var count int64
-	if len(query) > 0 {
-		if db := orm.Where(query, args).Count(&count); db.Error != nil {
+	if len(query.Filter) > 0 {
+		if db := orm.Where(query.Filter).Count(&count); db.Error != nil {
 			return 0, db.Error
 		}
 	} else {
