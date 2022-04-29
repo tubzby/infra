@@ -115,10 +115,13 @@ func (sql *MySQL) GetPages(objs interface{}, query Query) error {
 
 	var err error
 	if query.Filter != nil {
-		err = orm.Where(query.Filter).Limit(query.Limit).Offset(query.Offset).Find(objs).Error
-	} else {
-		err = orm.Limit(query.Limit).Offset(query.Offset).Find(objs).Error
+		orm = orm.Where(query.Filter)
 	}
+
+	if query.Limit > 0 {
+		orm = orm.Limit(query.Limit).Offset(query.Offset)
+	}
+	err = orm.Find(objs).Error
 	if err != nil {
 		logger.Errorf("read object from db failed(%v)", err)
 		return err
