@@ -5,7 +5,7 @@ type Connecter interface {
 	Add(obj interface{}) error
 	GetOne(obj interface{}, query string, args ...interface{}) error
 	Delete(obj interface{}, query string, args ...interface{}) error
-	GetPages(objs interface{}, page PageParam, query string, args ...interface{}) error
+	GetPages(objs interface{}, query Query) error
 	GetAll(objs interface{}, query string, args ...interface{}) error
 	Count(obj interface{}, query string, args ...interface{}) (int64, error)
 	// update single column
@@ -20,8 +20,8 @@ type CustomObj interface {
 	TblName() string
 }
 
-// PageParam is parameter for querying a list of resource
-type PageParam struct {
+type Query struct {
 	Offset int
 	Limit  int
+	Filter map[string]interface{}
 }

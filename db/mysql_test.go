@@ -108,10 +108,6 @@ func TestMySQL(t *testing.T) {
 			Err: nil,
 		},
 		{
-			OP:  "GetPages",
-			Err: nil,
-		},
-		{
 			OP: "Delete",
 			Obj: TestTbl{
 				ID: 2,
@@ -139,13 +135,6 @@ func TestMySQL(t *testing.T) {
 			}
 		case "Add":
 			assert.Equal(c.Err, sql.Add(&c.Obj))
-		case "GetPages":
-			var objs []TestTbl
-			pages := PageParam{
-				Offset: 1,
-				Limit:  10,
-			}
-			assert.Equal(c.Err, sql.GetPages(&objs, pages, ""))
 		case "Delete":
 			assert.Equal(c.Err, sql.Delete(&TestTbl{}, "id = ?", c.Obj.ID))
 		}
@@ -282,22 +271,59 @@ func TestGetPages(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal(int64(total), count)
 
-	param := PageParam{
+	query := Query{
 		Offset: 0,
 		Limit:  10,
 	}
 	var ress []Resource
-	err = sql.GetPages(&ress, param, "")
+	err = sql.GetPages(&ress, query)
 	assert.NoError(err)
 	assert.Equal(10, len(ress))
 
-	param.Offset = 10
-	err = sql.GetPages(&ress, param, "")
+	query.Offset = 10
+	err = sql.GetPages(&ress, query)
 	assert.NoError(err)
 	assert.Equal(10, len(ress))
 
-	param.Offset = 15
-	err = sql.GetPages(&ress, param, "")
+	query.Offset = 15
+	err = sql.GetPages(&ress, query)
 	assert.NoError(err)
 	assert.Equal(5, len(ress))
+}
+
+func TestGetPagesWithFilter(t *testing.T) {
+	assert := assert.New(t)
+	sql := createDB()
+
+	sql.dropTbl(&Resource{})
+	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&Resource{}))
+	defer sql.dropTbl(&Resource{})
+
+	var res Resource
+	var total = 20
+	for i := 0; i < total; i++ {
+		res.ID = 0
+		res.NodeID = int64(i)
+		res.IP = fmt.Sprintf("192.168.%d.0", i)
+		res.MASK = "255.255.255.0"
+		assert.NoError(sql.Add(&res))
+	}
+
+	count, err := sql.Count(&Resource{}, "")
+	assert.NoError(err)
+	assert.Equal(int64(total), count)
+
+	query := Query{
+		Offset: 0,
+		Limit:  10,
+	}
+
+	query.Filter = map[string]interface{}{
+		"id": []int{1, 2, 3, 4},
+	}
+	var ress []Resource
+	err = sql.GetPages(&ress, query)
+	assert.NoError(err)
+	assert.Equal(4, len(ress))
+
 }

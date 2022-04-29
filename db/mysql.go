@@ -103,7 +103,7 @@ func (sql *MySQL) GetOne(obj interface{}, query string, args ...interface{}) err
 }
 
 // GetPages get a page of object
-func (sql *MySQL) GetPages(objs interface{}, page PageParam, query string, args ...interface{}) error {
+func (sql *MySQL) GetPages(objs interface{}, query Query) error {
 	if !sql.checkState() {
 		return ErrConnect
 	}
@@ -114,10 +114,10 @@ func (sql *MySQL) GetPages(objs interface{}, page PageParam, query string, args 
 	}
 
 	var err error
-	if len(query) > 0 {
-		err = orm.Where(query, args).Limit(page.Limit).Offset(page.Offset).Find(objs).Error
+	if query.Filter != nil {
+		err = orm.Where(query.Filter).Limit(query.Limit).Offset(query.Offset).Find(objs).Error
 	} else {
-		err = orm.Limit(page.Limit).Offset(page.Offset).Find(objs).Error
+		err = orm.Limit(query.Limit).Offset(query.Offset).Find(objs).Error
 	}
 	if err != nil {
 		logger.Errorf("read object from db failed(%v)", err)

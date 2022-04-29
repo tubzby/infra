@@ -86,7 +86,7 @@ func (mdb *MemDB) Delete(obj interface{}, query string, args ...interface{}) err
 }
 
 // GetPages from db
-func (mdb *MemDB) GetPages(objs interface{}, page PageParam, query string, args ...interface{}) error {
+func (mdb *MemDB) GetPages(oobjs interface{}, query Query) error {
 	return nil
 }
 

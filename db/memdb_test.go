@@ -176,10 +176,6 @@ func TestMemDB(t *testing.T) {
 			Err: nil,
 		},
 		{
-			OP:  "GetPages",
-			Err: nil,
-		},
-		{
 			OP: "Delete",
 			Obj: TestTbl{
 				ID: 2,
@@ -206,13 +202,6 @@ func TestMemDB(t *testing.T) {
 			}
 		case "Add":
 			assert.Equal(c.Err, sql.Add(&c.Obj))
-		case "GetPages":
-			var objs []TestTbl
-			pages := PageParam{
-				Offset: 1,
-				Limit:  10,
-			}
-			assert.Equal(c.Err, sql.GetPages(&objs, pages, ""))
 		case "Delete":
 			assert.Equal(c.Err, sql.Delete(&TestTbl{}, "id = ?", c.Obj.ID))
 		}
