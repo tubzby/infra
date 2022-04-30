@@ -17,6 +17,8 @@ type myHook struct {
 	levels   []logrus.Level
 }
 
+type Level logrus.Level
+
 //实现 logrus.Hook 接口
 func (hook *myHook) Fire(entry *logrus.Entry) error {
 	fileName, line := findCaller(hook.Skip)
@@ -87,8 +89,8 @@ func DisableDebug() {
 	logrus.SetLevel(logrus.InfoLevel)
 }
 
-func SetLogLevel(level logrus.Level) {
-	logrus.SetLevel(level)
+func SetLogLevel(level Level) {
+	logrus.SetLevel(logrus.Level(level))
 }
 
 func EnableFileLine(skip int) {

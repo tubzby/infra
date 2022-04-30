@@ -27,6 +27,14 @@ func NewMemDB() *MemDB {
 	}
 }
 
+func (mdb *MemDB) CreateTable(obj interface{}) error {
+	return nil
+}
+
+func (mdb *MemDB) DropTable(obj interface{}) error {
+	return nil
+}
+
 // Add obj to db
 func (mdb *MemDB) Add(obj interface{}) error {
 	if !checkType(obj) {

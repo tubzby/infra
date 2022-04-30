@@ -56,8 +56,8 @@ func TestMySQL(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	assert.Nil(sql.dropTbl(&TestTbl{}))
-	assert.Nil(sql.createTbl(&TestTbl{}))
+	assert.Nil(sql.DropTable(&TestTbl{}))
+	assert.Nil(sql.CreateTable(&TestTbl{}))
 
 	cases := []struct {
 		OP  string
@@ -145,8 +145,8 @@ func TestMySQLUpdate(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	assert.Nil(sql.dropTbl(&TestTbl{}))
-	assert.Nil(sql.createTbl(&TestTbl{}))
+	assert.Nil(sql.DropTable(&TestTbl{}))
+	assert.Nil(sql.CreateTable(&TestTbl{}))
 
 	tbl := TestTbl{
 		Name: "test1",
@@ -161,8 +161,8 @@ func TestMySQLMultiUpdate(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	assert.Nil(sql.dropTbl(&TestTbl{}))
-	assert.Nil(sql.createTbl(&TestTbl{}))
+	assert.Nil(sql.DropTable(&TestTbl{}))
+	assert.Nil(sql.CreateTable(&TestTbl{}))
 
 	tbl := TestTbl{
 		Name:    "test1",
@@ -184,8 +184,8 @@ func TestMySQLGet(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	assert.Nil(sql.dropTbl(&TestTbl{}))
-	assert.Nil(sql.createTbl(&TestTbl{}))
+	assert.Nil(sql.DropTable(&TestTbl{}))
+	assert.Nil(sql.CreateTable(&TestTbl{}))
 
 	tbl := TestTbl{
 		Name:    "test1",
@@ -215,8 +215,8 @@ func TestHasMany(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	sql.dropTbl(&TestUser{})
-	sql.dropTbl(&TestGroup{})
+	sql.DropTable(&TestUser{})
+	sql.DropTable(&TestGroup{})
 
 	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&TestUser{}, &TestGroup{}))
 
@@ -253,9 +253,9 @@ func TestGetPages(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	sql.dropTbl(&Resource{})
+	sql.DropTable(&Resource{})
 	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&Resource{}))
-	defer sql.dropTbl(&Resource{})
+	defer sql.DropTable(&Resource{})
 
 	var res Resource
 	var total = 20
@@ -296,9 +296,9 @@ func TestGetPagesWithFilter(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	sql.dropTbl(&Resource{})
+	sql.DropTable(&Resource{})
 	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&Resource{}))
-	defer sql.dropTbl(&Resource{})
+	defer sql.DropTable(&Resource{})
 
 	var res Resource
 	var total = 20
@@ -333,9 +333,9 @@ func TestCount(t *testing.T) {
 	assert := assert.New(t)
 	sql := createDB()
 
-	sql.dropTbl(&Resource{})
+	sql.DropTable(&Resource{})
 	assert.NoError(sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(&Resource{}))
-	defer sql.dropTbl(&Resource{})
+	defer sql.DropTable(&Resource{})
 
 	var res Resource
 	var total = 20

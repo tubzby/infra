@@ -2,6 +2,8 @@ package db
 
 // Connecter interface
 type Connecter interface {
+	CreateTable(obj interface{}) error
+	DropTable(obj interface{}) error
 	Add(obj interface{}) error
 	GetOne(obj interface{}, query string, args ...interface{}) error
 	Delete(obj interface{}, query string, args ...interface{}) error

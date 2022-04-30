@@ -192,7 +192,7 @@ func (sql *MySQL) GetAll(objs interface{}, query string, args ...interface{}) er
 	return nil
 }
 
-func (sql *MySQL) dropTbl(obj interface{}) error {
+func (sql *MySQL) DropTable(obj interface{}) error {
 	if !sql.tblExist(obj) {
 		return nil
 	}
@@ -207,7 +207,7 @@ func (sql *MySQL) dropTbl(obj interface{}) error {
 func (sql *MySQL) tblExist(obj interface{}) bool {
 	return sql.orm.Migrator().HasTable(obj)
 }
-func (sql *MySQL) createTbl(obj interface{}) error {
+func (sql *MySQL) CreateTable(obj interface{}) error {
 	if err := sql.orm.Set("gorm:table_options", "CHARSET=utf8").AutoMigrate(obj); err != nil {
 		logger.Errorf("createTbl error(%s)", err)
 		return err
