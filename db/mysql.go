@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"gitee.com/romeo_zpl/infra/logger"
@@ -219,6 +220,23 @@ func (sql *MySQL) selectTbl(obj interface{}) *gorm.DB {
 	custom, ok := obj.(CustomObj)
 	if ok {
 		return sql.orm.Table(custom.TblName())
+	} else {
+		// for pointer to slice, detect if element is CutomObj type
+		items := reflect.TypeOf(obj)
+		if items.Kind() == reflect.Pointer {
+			items = items.Elem()
+		}
+		kind := items.Kind()
+		if kind != reflect.Slice && kind != reflect.Array {
+			return sql.orm
+		}
+
+		// create a new object
+		t := reflect.New(items.Elem())
+		custom, ok = t.Interface().(CustomObj)
+		if ok {
+			return sql.orm.Table(custom.TblName())
+		}
 	}
 	return sql.orm
 }
