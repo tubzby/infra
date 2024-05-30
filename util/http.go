@@ -10,11 +10,14 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 
 	"gitee.com/romeo_zpl/infra/logger"
+)
+
+var (
+	ErrAuth = errors.New("authentication failed")
 )
 
 func HttpPostJson(url string, value interface{}, headers map[string]string, out interface{}) error {
@@ -40,12 +43,16 @@ func HttpPostJson(url string, value interface{}, headers map[string]string, out 
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrAuth
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		logger.Errorf("[Http] invalid status: %d", resp.StatusCode)
 		return errors.New(fmt.Sprintf("invalid status: %d", resp.StatusCode))
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -79,12 +86,16 @@ func HttpGet(url string, headers map[string]string, out interface{}) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrAuth
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		logger.Errorf("[Http] invalid status: %d", resp.StatusCode)
 		return errors.New(fmt.Sprintf("invalid status: %d", resp.StatusCode))
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
