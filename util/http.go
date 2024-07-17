@@ -48,7 +48,12 @@ func HttpPostJson(url string, value interface{}, headers map[string]string, out 
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		logger.Errorf("[Http] invalid status: %d", resp.StatusCode)
+		bs, err := io.ReadAll(resp.Body)
+		if err != nil {
+			logger.Errorf("[Http] read body error: %s", err)
+			return err
+		}
+		logger.Errorf("[Http] invalid status: %d, body: %s", resp.StatusCode, string(bs))
 		return errors.New(fmt.Sprintf("invalid status: %d", resp.StatusCode))
 	}
 
@@ -91,7 +96,12 @@ func HttpGet(url string, headers map[string]string, out interface{}) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		logger.Errorf("[Http] invalid status: %d", resp.StatusCode)
+		bs, err := io.ReadAll(resp.Body)
+		if err != nil {
+			logger.Errorf("[Http] read body error: %s", err)
+			return err
+		}
+		logger.Errorf("[Http] invalid status: %d, body: %s", resp.StatusCode, string(bs))
 		return errors.New(fmt.Sprintf("invalid status: %d", resp.StatusCode))
 	}
 
