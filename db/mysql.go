@@ -143,7 +143,7 @@ func (sql *MySQL) Count(obj interface{}, query Query) (int64, error) {
 	orm = orm.Model(obj)
 
 	var count int64
-	if len(query.Filter) > 0 {
+	if query.Filter != nil {
 		if db := orm.Where(query.Filter).Count(&count); db.Error != nil {
 			return 0, db.Error
 		}

@@ -25,5 +25,5 @@ type CustomObj interface {
 type Query struct {
 	Offset int
 	Limit  int
-	Filter map[string]interface{}
+	Filter interface{}
 }

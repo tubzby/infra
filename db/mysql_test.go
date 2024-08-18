@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"gitee.com/romeo_zpl/infra/logger"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -11,11 +12,11 @@ import (
 
 func createDB() *MySQL {
 	conf := Conf{
-		IP:          "127.0.0.1",
-		DB:          "gproxy",
+		IP:          "192.168.0.102",
+		DB:          "test",
 		Port:        3306,
-		UserName:    "gproxy",
-		Password:    "gproxy",
+		UserName:    "root",
+		Password:    "root",
 		Idle:        1,
 		Active:      2,
 		IdleTimeout: 10,
@@ -25,7 +26,7 @@ func createDB() *MySQL {
 }
 
 type TestTbl struct {
-	ID      int    `json:"id" gorm:"column:id"`
+	ID      int    `json:"id" gorm:"primaryKey;column:id"`
 	Name    string `json:"name" gorm:"column:name"`
 	Age     int    `json:"age" gorm:"column:age"`
 	Group   int    `json:"group" gorm:"column:group"`
@@ -398,4 +399,40 @@ func TestSelectArray(t *testing.T) {
 	count, err := sql.Count(&a, query)
 	assert.NoError(err)
 	assert.Equal(int64(20), count)
+}
+
+func TestLike(t *testing.T) {
+	assert := assert.New(t)
+	sql := createDB()
+
+	assert.Nil(sql.DropTable(&TestTbl{}))
+	assert.Nil(sql.CreateTable(&TestTbl{}))
+
+	res := TestTbl{Age: 10, Group: 3, Company: "Company"}
+	name := []string{"alice", "bob", "jim"}
+	for i := 0; i < len(name); i++ {
+		res.ID = i + 1
+		res.Name = name[i]
+		assert.NoError(sql.Add(&res))
+		logger.Info("add ")
+	}
+
+	var ress []TestTbl
+	query := Query{
+		Offset: 0,
+		Limit:  10,
+		Filter: clause.Like{Column: "name", Value: "%ali%"},
+	}
+	count, err := sql.Count(&ress, query)
+	assert.NoError(err)
+	assert.True(count == 1)
+
+	query = Query{
+		Offset: 0,
+		Limit:  10,
+		Filter: clause.Like{Column: "name", Value: "%haha%"},
+	}
+	count, err = sql.Count(&ress, query)
+	assert.NoError(err)
+	assert.True(count == 0)
 }
